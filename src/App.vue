@@ -16,6 +16,7 @@ const requests = axios.create({
     'Content-Type': 'application/json; charset=utf-8'
   }
 });
+const username = ref('');
 
 var current_conditons = null;
 
@@ -63,7 +64,6 @@ const deleteAlarmsFromServer = (ids) => {
 
 const clearAlarmsFromServer = (ids) => {
   loading.value = true;
-  console.log(ids);
   requests.post('/alarm/clear/', ids)
     .catch(function (error) {
       showErrorMsg.value = true;
@@ -77,13 +77,44 @@ const clearAlarmsFromServer = (ids) => {
       getAlarmsFromServer(current_conditons);
     });
 };
+
+const getUserInfoFromServer = () => {
+  requests.get("/user_info").then(
+    (response) => {
+      username.value = response.data.name;
+    }
+  ).catch(function (error) {
+    showErrorMsg.value = true;
+    errorMsg.value = `Cannot get userinfo from api server, error: ${error.message}`;
+    setTimeout(() => {
+      showErrorMsg.value = false;
+    }, 4000);
+  });
+};
+
+const userLogout = () => {
+  window.location="/logout";
+}
+
 getAlarmsFromServer();
+getUserInfoFromServer();
+
 </script>
 
 <template>
   <div>
     <el-container>
-      <el-header class="header" height="40px">Header</el-header>
+      <el-header class="header" height="40px">
+        <el-row>
+          <el-col :span="4">
+            <span style="font-size: xx-large; width: min-content; vertical-align: baseline;">Fire Alarm</span>
+          </el-col>
+          <el-col :span="18" />
+          <el-col :span="2" class="btn-container">
+            <el-button link style="width: min-content;" @click="userLogout">Hello {{ username }}, Logout</el-button>
+          </el-col>
+        </el-row>
+      </el-header>
       <el-main>
         <div>
           <el-card>
@@ -125,7 +156,11 @@ getAlarmsFromServer();
 }
 
 .header {
-  text-align: center;
-  margin-top: 20px;
+  margin: 10px;
+}
+
+.btn-container {
+  display: flex;
+  align-items: end;
 }
 </style>
